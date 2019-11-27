@@ -2,20 +2,20 @@
 <div>
   <HomeNews/>
   <HomeTimeline/>
-  <CustomerProductList :showNumber="showNumber"></CustomerProductList>
+  <ProductlistProducts :showNumber="showNumber"></ProductlistProducts>
 </div>
 </template>
 
 <script>
 import HomeNews from '../components/HomeNews.vue';
 import HomeTimeline from '../components/HomeTimeline.vue';
-import CustomerProductList from './CustomerProductList.vue';
+import ProductlistProducts from '../components/ProductlistProducts.vue';
 
 export default {
   components: {
     HomeNews,
     HomeTimeline,
-    CustomerProductList,
+    ProductlistProducts,
   },
   data() {
     return {

@@ -1,69 +1,48 @@
 <template>
 <div>
-  <div class="cartModalIcon">
+  <div class="likeModalIcon">
     <a class="d-flex justify-content-center align-items-center"
-      @click.prevent="showCartModal" >
-      <i class="fas fa-shopping-cart fa-2x">
+      @click.prevent="showLikeModal" >
+      <i class="fas fa-heart fa-2x">
       </i>
       <div class="cartLength d-flex justify-content-center align-items-center">
-        {{cartLength}}
+        {{likeProductsLength}}
       </div>
     </a>
   </div>
   <!--cartmodal-->
-  <div class="modal fade modalExpand" id="CartModal">
+  <div class="modal fade modalExpand" id="likeModal">
     <div class="modal-dialog modal-dialogExpand">
-      <div class="modal-content">
-        <div class="container" v-if="cartLength">
-          <div class="p-2"><h5>已加入購物車 :</h5></div>
+      <div class="modal-content ">
+        <div class="container mb-3" v-if="likeProductsLength">
+          <div class="p-2"><h5>已加入最愛 :</h5></div>
           <div class="modalTableWrap d-flex">
             <div class="boxone"></div>
             <div class="boxtwo"></div>
             <table >
               <tbody>
-                <tr class="p-1" v-for=" item in carts.carts " :key="item.id" >
+                <tr class="p-1" v-for=" (item, key) in likeProducts " :key="key" >
                   <td width="200" class="align-middle text-left bgCover p-1"
-                     :style="{backgroundImage :`url(${item.product.imageUrl})`,}">
+                     :style="{backgroundImage :`url(${item.imageUrl})`,}">
                     <div class="name p-1"
                       @click.prevent=
-                      "routerPush(`/customerBase/customerProduct/${item.product.id}`)">
-                      {{item.product.title}}
+                      "routerPush(`/customerBase/customerProduct/${item.id}`)">
+                      {{item.title}}
                     </div>
                   </td>
-                  <td class="align-middle text-center" width="30">{{item.qty}}</td>
-                  <td class="align-middle text-center" width="30">
-                    <button type="button" class="btn btn-outline-danger btn-sm"
-                      @click="removeCartItem(item.id)"
-                      :disabled="item.id === status.loadingItem">
-                      <i class="fas fa-spinner fa-spin" v-if="item.id === status.loadingItem"></i>
-                      <i class="far fa-trash-alt" v-else></i>
-                    </button>
+                  <td class="align-middle text-center">
+                    <i class="fas fa-heart fa-2x like p-1" aria-hidden="true"
+                      :class="{'likeActive':true}"
+                      @click.stop="removelikeItem(key)">
+                    </i>
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
-
-          <div class="pt-2 d-flex justify-content-between align-items-end"
-              :class="{'lineThrough':carts.total!==carts.final_total}" >
-            <h5>總計 :</h5>
-            <h5 > {{carts.total | currency}}</h5>
-          </div>
-          <div class="pt-2 d-flex text-danger justify-content-between
-                      align-items-end" v-if="carts.total!==carts.final_total">
-            <h5>優惠價 :</h5>
-            <h5 > {{carts.final_total | currency}}</h5>
-          </div>
-
-          <div class="couponBox  mb-2 mt-2">
-            <button class="btn btn-success" type="button"
-                    @click.prevent="routerPush('/customerBase/customerShoppingCart')">
-              結帳去
-            </button>
-          </div>
         </div>
         <div class="cartLength0  d-flex justify-content-center" v-else>
-          <h5 class="py-2 px-3 ">購物車目前沒有商品喔!</h5>
+          <h5 class="py-2 px-3 ">最愛目前沒有商品喔!</h5>
         </div>
       </div>
     </div>
@@ -78,61 +57,54 @@ import $ from 'jquery';
 export default {
   data() {
     return {
-      carts: {},
-      cartLength: 0,
-      isLoading: false,
-      status: {
-        loadingItem: '',
-      },
+      likeProducts: [],
+      likeProductsLength: 0,
     };
   },
   methods: {
-    getCart() {
-      const vm = this;
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      this.$http.get(api).then((response) => {
-        vm.carts = response.data.data;
-        vm.cartLength = response.data.data.carts.length;
-      });
+    getLikeProducts() {
+      this.likeProducts = JSON.parse(localStorage.getItem('likeProducts')) || [];
+      this.likeProductsLength = this.likeProducts.length;
     },
-    showCartModal() {
-      $('#CartModal').modal('show');
+    removelikeItem(key) {
+      this.likeProducts.splice(key, 1);
+      localStorage.setItem('likeProducts', JSON.stringify(this.likeProducts));
+      this.getLikeProducts();
+      this.$bus.$emit('getFilterProducts');
+      this.$bus.$emit('getHistoryProducts');
+      this.$bus.$emit('getPopularProducts');
+      this.$bus.$emit('getProduct');
     },
-    removeCartItem(id) {
-      const vm = this;
-      vm.status.loadingItem = id;
-      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
-      this.$http.delete(url).then(() => {
-        vm.getCart();
-        vm.status.loadingItem = '';
-      });
+
+    showLikeModal() {
+      $('#likeModal').modal('show');
     },
     routerPush(page) {
-      $('#CartModal').modal('hide');
+      $('#likeModal').modal('hide');
       if (page !== this.$route.path) {
         this.$router.push(page);
       }
     },
   },
   created() {
-    this.getCart();
-    this.$bus.$on('getCartEmit', () => {
-      this.getCart();
+    this.getLikeProducts();
+    this.$bus.$on('getLikeProducts', () => {
+      this.getLikeProducts();
     });
   },
 };
 </script>
 
 <style >
-.cartModalIcon{
+.likeModalIcon{
   width:60px;
   height:60px;
   position:fixed;
   right:20px;
-  bottom:20px;
+  bottom:85px;
   z-index:51;
 }
-.cartModalIcon a{
+.likeModalIcon a{
   width:100%;
   height:100%;
   position:relative;
@@ -141,7 +113,7 @@ export default {
   border-left:2px solid var(--maincolor);
   background: rgba(255,255,255,0.8);
 }
-.cartLength{
+.likeLength{
   width:30px;
   height:30px;
   position:absolute;
@@ -152,7 +124,7 @@ export default {
   color:white;
   background:red;
 }
-.cartModalIcon i{
+.likeModalIcon i{
   color:var(--maincolor);
   position:absolute;
   left:50%;
@@ -204,7 +176,7 @@ export default {
 }
 .modalTableWrap table{
   display:block;
-  height:130px;
+  height:100px;
   overflow-y:scroll;
 
   width:100%;
@@ -224,18 +196,6 @@ export default {
 .modalExpand button {
   width:100%;
   white-space:nowrap;
-}
-.modalTableWrap .like{
-  color: rgba(229,57,53,0.6);
-  transition: 0.3s;
-}
-.modalTableWrap .like:hover{
-  transform: scale(1.2);
-  transition: 0.3s;
-}
-.modalTableWrap .likeActive{
-  color: red;
-  transition: 0.3s;
 }
 
 .lineThrough{

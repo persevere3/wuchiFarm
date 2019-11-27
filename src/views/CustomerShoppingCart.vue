@@ -2,7 +2,7 @@
 <div>
 
   <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
-  <div class="container" v-if="cartsLength">
+  <div class="container" v-if="cartLength">
 
     <ShoppingCartStep :stepActive="stepActive" ></ShoppingCartStep>
 
@@ -26,10 +26,14 @@
             </td>
             <td class="align-middle text-left bgCover p-1"
                :style="{backgroundImage :`url(${item.product.imageUrl})`,}">
-              <div class="name bgCover p-1">{{item.product.title}}</div>
-              <div class="name text-danger p-1"  v-if="item.coupon">已套用優惠券</div>
+              <div class="name bgCover p-2"
+                @click.prevent="routerPush(`/customerBase/customerProduct/${item.product.id}`)">
+                {{item.product.title}}
+              </div>
+              <div class="text-danger p-1"  v-if="item.coupon">已套用優惠券</div>
             </td>
-            <td class="align-middle text-center">{{item.qty}}</td>
+            <td class="align-middle text-center">{{item.qty}}
+            </td>
             <td class="price align-middle text-right">{{item.product.price | currency}}</td>
             <td class="align-middle text-center">
               <button type="button" class="btn btn-outline-danger btn-sm"
@@ -70,24 +74,33 @@
     <h5 class="py-2 px-3 ">購物車目前沒有商品喔!</h5>
   </div>
 
+  <ProductlistHistory></ProductlistHistory>
+  <ProductlistPopular></ProductlistPopular>
+
 </div>
 </template>
 
 <script>
 import BaseLogoLoading from '../components/BaseLogoLoading.vue';
 import ShoppingCartStep from '../components/ShoppingCartStep.vue';
+import ProductlistHistory from '../components/ProductlistHistory.vue';
+import ProductlistPopular from '../components/ProductlistPopular.vue';
 
 export default {
   components: {
     BaseLogoLoading,
     ShoppingCartStep,
+    ProductlistHistory,
+    ProductlistPopular,
   },
   data() {
     return {
-      carts: {},
-      coupon_code: '',
-      cartsLength: 0,
       stepActive: 'cart',
+
+      carts: [],
+      cartLength: 0,
+      coupon_code: '',
+
       isLoading: false,
       status: {
         loadingItem: '',
@@ -101,14 +114,14 @@ export default {
       vm.isLoading = true;
       this.$http.get(api).then((response) => {
         vm.carts = response.data.data;
-        vm.cartsLength = response.data.data.carts.length;
+        vm.cartLength = vm.carts.carts.length;
         vm.isLoading = false;
       });
     },
     removeCartItem(id) {
       const vm = this;
-      vm.status.loadingItem = id;
       const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
+      vm.status.loadingItem = id;
       this.$http.delete(url).then(() => {
         vm.getCart();
         vm.$bus.$emit('getCartEmit');
@@ -133,12 +146,15 @@ export default {
       });
     },
     routerPush(page) {
-      this.$router.push(`${page}`);
+      this.$router.push(page);
     },
   },
   created() {
     this.getCart();
     this.$bus.$emit('pageActivePush', this.$route.path);
+    this.$bus.$on('getShoppingCart', () => {
+      this.getCart();
+    });
   },
 };
 </script>
@@ -185,8 +201,6 @@ export default {
               rgba(var(--secondaryrgb),1) 50% ,rgb(255,255,255) 100%);
   z-index:4;
 }
-
-
 .tableWrap th{
   font-size: 1rem;
   border-bottom:2px solid var(--maincolor);
@@ -205,14 +219,16 @@ export default {
 .tableWrap .name {
   background-color:rgba(255,255,255,0.5);
 }
+.tableWrap .name:hover {
+  background-color:rgba(255,255,255,0.8);
+  cursor:pointer;
+}
 .lineThrough{
   text-decoration:line-through;
 }
-
 .couponBox button {
   white-space:nowrap;
 }
-
 .cartLength0{
   padding:100px 0px 100px 0px;
 }
@@ -220,7 +236,6 @@ export default {
   border-left:5px solid var(--maincolor);
   box-shadow:1px 1px 3px var(--maincolor);
 }
-
 @media screen and (max-width: 480px){
   table .pictureTd{
     display:none;

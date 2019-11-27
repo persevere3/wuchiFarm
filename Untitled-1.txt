@@ -1,0 +1,10 @@
+
+this.storageCarts = JSON.parse(localStorage.getItem('storageCart')) || [];
+localStorage.setItem('storageCart', JSON.stringify(this.storageCarts));
+
+
+購物車內「修改某產品的訂購數量」?????
+最近看的產品
+最受歡迎產品
+查詢訂單
+我的最愛

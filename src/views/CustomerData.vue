@@ -103,7 +103,6 @@ export default {
               vm.$router.push(`customerPay/${response.data.orderId}`);
               vm.$bus.$emit('getCartEmit');
             }
-            vm.isLoading = false;
           });
         }
       });
@@ -127,7 +126,7 @@ export default {
   position:absolute;
   top:-1%;
   left:-2%;
-  background-color: linear-gradient(top, var(--secondarycolor) 0%,
+  background: linear-gradient(top, var(--secondarycolor) 0%,
                     var(--secondarycolor) 50% ,white 100%);
   background: -ms-linear-gradient(top, var(--secondarycolor) 0%,
               var(--secondarycolor) 50% ,white 100%);
@@ -154,7 +153,7 @@ export default {
   position:absolute;
   bottom:-1%;
   right:-2%;
-  background-color: linear-gradient(top, white 0%, var(--secondarycolor) 50% ,
+  background: linear-gradient(top, white 0%, var(--secondarycolor) 50% ,
                     var(--secondarycolor) 100%);
   background: -ms-linear-gradient(top, white 0%, var(--secondarycolor) 50% ,
               var(--secondarycolor) 100%);

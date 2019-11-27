@@ -51,7 +51,7 @@ export default {
   height:2px;
   top:40px;
   transform:translateY(-50%);
-  background-color: linear-gradient(left, rgba(213,213,213,0) 0%,
+  background: linear-gradient(left, rgba(213,213,213,0) 0%,
   rgb(var(--secondaryrgb)) 15%,
   rgb(var(--secondaryrgb)) 85%,
   rgba(213,213,213,0) 100%);

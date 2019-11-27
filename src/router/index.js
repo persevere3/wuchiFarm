@@ -10,7 +10,6 @@ const routes = [
   },
   {
     path: '/customerBase',
-    name: 'CustomerBase',
     component: () => import('../views/CustomerBase.vue'),
     children: [
       {
@@ -19,10 +18,9 @@ const routes = [
         component: () => import('../views/CustomerHome.vue'),
       },
       {
-        path: 'customerProductList',
-        name: 'CustomerProductList',
-        component: () => import('../views/CustomerProductList.vue'),
-        props: { showNumber: 10 },
+        path: 'customerProductlist',
+        name: 'CustomerProductlist',
+        component: () => import('../views/CustomerProductlist.vue'),
       },
       {
         path: 'customerProduct/:id',

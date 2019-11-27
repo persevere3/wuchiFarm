@@ -1,0 +1,297 @@
+<template>
+<div>
+
+  <div class="container-fluid mt-3">
+    <ul class="category d-flex justify-content-start">
+      <li class="" style="border-left:2px dotted var(--secondarycolor);">
+        <a class="px-2 px-md-3 py-md-2 d-flex flex-column flex-md-row
+                   justify-content-center align-items-center">
+          <div class="categoryName d-flex flex-column flex-md-row
+                      justify-content-center align-items-center">
+              <p class="ml-md-1 en"></p>
+              <p class="ml-md-1 ">您剛剛還看了。。。</p>
+          </div>
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <div class="container mb-3">
+    <div class="row">
+      <div class="product col-md-6 col-lg-4 my-2"
+           v-for="(item,key) in historyProducts" :key="key">
+        <a @click.prevent="routerPush(`/customerBase/customerProduct/${item.id}`)">
+          <p class="title text-primary">{{item.title}}</p>
+          <div class="boxone bgCover "
+              :style="{backgroundImage :`url(${item.imageUrl})`,}"></div>
+          <div class="boxtwo bgCover "
+              :style="{backgroundImage :`url(${item.imageUrl})`,}"></div>
+          <div class="info py-2 d-flex flex-column">
+            <div class="intro mb-auto">{{item.description}}</div>
+            <div class="price d-flex justify-content-end align-items-end">
+              <span class="original mr-2 ">{{item.origin_price | currency}}</span>
+              <span class="special text-danger mr-2 ">{{item.price | currency}}</span>
+            </div>
+            <div class="button d-flex justify-content-end align-items-center">
+              <i class="fas fa-heart fa-2x like mr-2 mt-2" aria-hidden="true"
+                :class="{'likeActive':isLike[`${key}`]}"
+                @click.stop="updateLikeProducts(key)">
+              </i>
+              <button class="more btn mr-2 mt-2 btn-outline-success">more</button>
+              <button class="btn btn-success cart mr-2 mt-2"
+                     @click.stop="addtoCart(item.id)"
+                     :disabled="item.id === status.loadingItem">
+                <i class="fas fa-spinner fa-spin"
+                   v-if="item.id === status.loadingItem"></i>
+                <i class="fas fa-plus " v-else></i>
+                加入購物車
+              </button>
+            </div>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      historyProducts: [],
+      carts: [],
+      likeProducts: [],
+      isLike: [],
+      status: {
+        loadingItem: '',
+      },
+    };
+  },
+  methods: {
+    getHistoryProducts() {
+      this.historyProducts = JSON.parse(localStorage.getItem('historyProducts')) || [];
+      this.isLike.length = 0;
+      for (let i = 0; i < this.historyProducts.length; i += 1) {
+        this.$set(this.isLike, i, false);
+      }
+      this.likeProducts = JSON.parse(localStorage.getItem('likeProducts')) || [];
+      for (let i = 0; i < this.likeProducts.length; i += 1) {
+        for (let j = 0; j < this.historyProducts.length; j += 1) {
+          if (this.likeProducts[i].id === this.historyProducts[j].id) {
+            this.$set(this.isLike, j, true);
+            console.log(2);
+          }
+        }
+      }
+    },
+    updateLikeProducts(key) {
+      this.$set(this.isLike, key, !this.isLike[key]);
+      if (this.isLike[key] === true) {
+        this.likeProducts.push(this.historyProducts[key]);
+      } else {
+        for (let i = 0; i < this.likeProducts.length; i += 1) {
+          if (this.historyProducts[key].id === this.likeProducts[i].id) {
+            this.likeProducts.splice(i, 1);
+          }
+        }
+      }
+      localStorage.setItem('likeProducts', JSON.stringify(this.likeProducts));
+      this.$bus.$emit('getLikeProducts');
+      this.$bus.$emit('getFilterProducts');
+      this.$bus.$emit('getPopularProducts');
+      this.$bus.$emit('getProduct');
+    },
+    getCart() {
+      const vm = this;
+      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
+      this.$http.get(api).then((response) => {
+        vm.carts = response.data.data;
+      });
+    },
+    addtoCart(id, qty = 1) {
+      const vm = this;
+      let i = 0;
+      let q = 0;
+      let mergeQty = 0;
+      // for出同id取出數量後刪除該筆
+      for (i = 0; i < vm.carts.carts.length; i += 1) {
+        if (id === vm.carts.carts[i].product.id) {
+          q = vm.carts.carts[i].qty;
+          vm.removeCartItem(vm.carts.carts[i].id);
+        }
+      }
+      mergeQty = qty + q;
+      // 合併後新增至購物車
+      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
+      vm.status.loadingItem = id;
+      const cart = {
+        product_id: id,
+        qty: mergeQty,
+      };
+      this.$http.post(api, { data: cart }).then(() => {
+        vm.$bus.$emit('getCartEmit');
+        vm.status.loadingItem = '';
+        vm.$bus.$emit('messagePush', '已加入購物車');
+        vm.getCart();
+        vm.$bus.$emit('getShoppingCart');
+      });
+    },
+    removeCartItem(id) {
+      const vm = this;
+      vm.status.loadingItem = id;
+      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
+      this.$http.delete(url).then(() => {
+        vm.status.loadingItem = '';
+      });
+    },
+    routerPush(page) {
+      if (page !== this.$route.path) {
+        this.$router.push(page);
+      }
+    },
+  },
+  created() {
+    this.getHistoryProducts();
+    this.getCart();
+    this.$bus.$on('getHistoryProducts', () => {
+      this.getHistoryProducts();
+    });
+  },
+};
+</script>
+
+<style scoped>
+.category{
+  width:100%;
+  border-bottom:2px solid var(--secondarycolor);
+}
+.category li{
+  border-right:2px dotted var(--secondarycolor);
+}
+.category li a{
+  color:black;
+  background-color:var(--secondarycolor);
+}
+.category li .active{
+  color:black;
+  background-color:var(--secondarycolor);
+}
+.categoryName{
+  font-size:1.25rem;
+  white-space:nowrap;
+}
+@media screen and (max-width: 767px) {
+  .category li a .en{
+    display:none;
+  }
+}
+.product{
+  height:250px;
+}
+.product a {
+  width:100%;
+  height:100%;
+  position: relative;
+  overflow:hidden;
+  box-shadow: 1px 1px 2px var(--maincolor);
+  transition: 0.5s;
+}
+.product a:hover{
+  box-shadow: 1px 1px 8px var(--maincolor);
+  transition: 0.5s;
+}
+.product a .title{
+  font-size: 1rem;
+  padding: 2rem 1rem 2rem 1rem;
+  writing-mode: vertical-lr;
+  position: absolute;
+  top: 0%;
+  left: 5%;
+}
+.product a .boxone{
+  width: 60%;
+  height: 25%;
+  position:absolute;
+  top: 0%;
+  right: 5%;
+}
+.product a .boxtwo{
+  width: 60%;
+  height: 70%;
+  position:absolute;
+  bottom:0%;
+  right:5%;
+  border-radius:5% 0% 0% 0%;
+}
+.product a .info{
+  width:72%;
+  height:100%;
+  position:absolute;
+  top:0%;
+  right:-100%;
+  background-color:rgba(255,255,255,0.8);
+  transition: 0.8s;
+}
+.product a:hover .info{
+  right:0%;
+  transition: 0.8s;
+}
+.product a .intro{
+  font-size: 1rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  line-height: 1.75rem;
+}
+.product a .original{
+  font-size: 1.25rem;
+  text-decoration: line-through;
+}
+.product a .special{
+  font-size: 1.5rem;
+}
+
+.product a .like{
+  color: rgba(229,57,53,0.6);
+  transition: 0.3s;
+}
+.product a .like:hover{
+  transform: scale(1.2);
+  transition: 0.3s;
+}
+.product a .likeActive{
+  color: red;
+  transition: 0.3s;
+}
+@media screen and (max-width: 992px) {
+  .product{
+    height:250px;
+  }
+}
+@media screen and (max-width: 768px) {
+  .product{
+    height:350px;
+  }
+  .product a .info{
+    right:0%;
+    background-color:rgba(255,255,255,0);
+  }
+  .product a .info .price{
+    background-color:rgba(255,255,255,0.8);
+  }
+  .product a .info .button{
+    background-color:rgba(255,255,255,0.8);
+  }
+  .product a .intro{
+    opacity:0;
+  }
+}
+@media screen and (max-width: 480px) {
+  .product{
+    height:250px;
+  }
+}
+</style>

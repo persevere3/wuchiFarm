@@ -104,7 +104,6 @@ export default {
       vm.isLoading = true;
       this.$http.get(url).then((response) => {
         vm.order = response.data.order;
-        console.log(response);
         vm.isLoading = false;
       });
     },
@@ -145,7 +144,7 @@ export default {
   position:absolute;
   top:-2%;
   left:-2%;
-  background-color: linear-gradient(top, var(--secondarycolor) 0%,
+  background: linear-gradient(top, var(--secondarycolor) 0%,
               var(--secondarycolor) 50% ,white 100%);
   background: -ms-linear-gradient(top, var(--secondarycolor) 0%,
               var(--secondarycolor) 50% ,white 100%);
@@ -161,7 +160,7 @@ export default {
   position:absolute;
   top:-2%;
   right:-2%;
-  background-color: linear-gradient(top, var(--secondarycolor) 0%,
+  background: linear-gradient(top, var(--secondarycolor) 0%,
                     var(--secondarycolor) 50% ,white 100%);
   background: -ms-linear-gradient(top, var(--secondarycolor) 0%,
               var(--secondarycolor) 50% ,white 100%);
@@ -199,7 +198,7 @@ button{
   position:absolute;
   top:-1%;
   left:-2%;
-  background-color: linear-gradient(top, var(--secondarycolor) 0%,
+  background: linear-gradient(top, var(--secondarycolor) 0%,
                     var(--secondarycolor) 50% ,white 100%);
   background: -ms-linear-gradient(top, var(--secondarycolor) 0%,
               var(--secondarycolor) 50% ,white 100%);
@@ -226,7 +225,7 @@ button{
   position:absolute;
   bottom:-1%;
   right:-2%;
-  background-color: linear-gradient(top, white, var(--secondarycolor) 50% ,
+  background: linear-gradient(top, white, var(--secondarycolor) 50% ,
                     var(--secondarycolor) 100%);
   background: -ms-linear-gradient(top, white, var(--secondarycolor) 50% ,
               var(--secondarycolor) 100%);

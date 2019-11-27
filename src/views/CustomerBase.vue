@@ -7,6 +7,10 @@
 
   <router-view></router-view>
 
+  <BaseLikeModal
+    v-if="pageActive!=='/customerBase/customerShoppingCart'&&
+          pageActive!=='/customerBase/customerData'">
+  </BaseLikeModal>
   <BaseCartModal
     v-if="pageActive!=='/customerBase/customerShoppingCart'&&
           pageActive!=='/customerBase/customerData'">
@@ -20,6 +24,7 @@
 import BaseNavbar from '../components/BaseNavbar.vue';
 import BaseAlert from '../components/BaseAlert.vue';
 import BaseBanner from '../components/BaseBanner.vue';
+import BaseLikeModal from '../components/BaseLikeModal.vue';
 import BaseCartModal from '../components/BaseCartModal.vue';
 import BaseFooter from '../components/BaseFooter.vue';
 
@@ -28,6 +33,7 @@ export default {
     BaseNavbar,
     BaseAlert,
     BaseBanner,
+    BaseLikeModal,
     BaseCartModal,
     BaseFooter,
   },

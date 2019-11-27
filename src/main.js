@@ -23,6 +23,7 @@ Vue.component('Loading', Loading);
 Vue.filter('currency', currency);
 Vue.filter('date', dateFilter);
 
+
 Vue.use(VueI18n);
 const i18n = new VueI18n({
   locale: 'zhTW',

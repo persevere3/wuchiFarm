@@ -14,7 +14,7 @@
 <style scoped>
 .footer
 {
-  background-color: linear-gradient(top, var(--secondarycolor) 0%,
+  background: linear-gradient(top, var(--secondarycolor) 0%,
                     var(--secondarycolor) 80% ,white 100%);
   background: -ms-linear-gradient(top, var(--secondarycolor) 0%,
                     var(--secondarycolor) 80% ,white 100%);
