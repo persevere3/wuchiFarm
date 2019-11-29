@@ -21,6 +21,7 @@
       <div class="product col-md-6 col-lg-4 my-2"
            v-for="(item,key) in products" :key="key">
         <a @click.prevent="routerPush(`/customerBase/customerProduct/${item.id}`)">
+          {{item.content}} 瀏覽次數: {{item.unit}}
           <p class="title text-primary">{{item.title}}</p>
           <div class="boxone bgCover "
               :style="{backgroundImage :`url(${item.imageUrl})`,}"></div>

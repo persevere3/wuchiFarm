@@ -12,7 +12,7 @@
       </div>
     </div>
     <div class="info bg-white px-3 d-flex flex-column justify-content-center align-items-start">
-      <div class="name text-primary p-2">{{product.title}}</div>
+      <div class="name text-primary p-2">{{product.content}}{{product.title}}</div>
       <div class="price p-2 d-flex justify-content-start align-items-end">
         <span class="original mr-2">{{product.origin_price | currency}}</span>
         <span class="special text-danger mr-2">{{product.price | currency}}</span>
@@ -100,8 +100,9 @@ export default {
         vm.product = response.data.product;
         vm.updateHistoryProducts();
         vm.updatePopularProducts();
-        vm.isLoading = false;
         vm.updateIsLike();
+        vm.isLoading = false;
+        vm.$bus.$emit('getHistoryProducts');
       });
     },
     updateIsLike() {
@@ -187,7 +188,7 @@ export default {
           return;
         }
       }
-      if (this.historyProducts.length === 3) {
+      if (this.historyProducts.length === 4) {
         for (let i = 1; i < this.historyProducts.length; i += 1) {
           this.historyProducts[i - 1] = this.historyProducts[i];
         }
@@ -201,15 +202,17 @@ export default {
     updatePopularProducts() {
       const vm = this;
       const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/admin/product/${vm.product.id}`;
+      console.log(vm.product.content, vm.product.unit);
       vm.product.unit = (+vm.product.unit) + 1;
       this.$http.put(api, { data: vm.product }).then(() => {
+        vm.$bus.$emit('getPopularProducts');
       });
     },
   },
   created() {
+    this.$bus.$emit('pageActivePush', this.$route.path);
     this.getProduct();
     this.getCart();
-    this.$bus.$emit('pageActivePush', this.$route.path);
     this.$bus.$on('getProduct', () => {
       this.updateIsLike();
     });

@@ -19,8 +19,9 @@
   <div class="container mb-3">
     <div class="row">
       <div class="product col-md-6 col-lg-4 my-2"
-           v-for="(item,key) in historyProducts" :key="key">
+           v-for="(item,key) in historyProducts" :key="key" v-show="key<historyProducts.length-1">
         <a @click.prevent="routerPush(`/customerBase/customerProduct/${item.id}`)">
+          {{item.content}}
           <p class="title text-primary">{{item.title}}</p>
           <div class="boxone bgCover "
               :style="{backgroundImage :`url(${item.imageUrl})`,}"></div>
@@ -81,7 +82,6 @@ export default {
         for (let j = 0; j < this.historyProducts.length; j += 1) {
           if (this.likeProducts[i].id === this.historyProducts[j].id) {
             this.$set(this.isLike, j, true);
-            console.log(2);
           }
         }
       }
