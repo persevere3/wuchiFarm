@@ -66,7 +66,7 @@
         v-for="(item,key) in filterProducts" :key="key"
         v-show="key>=(currentPage-1)*showNumber&&key<currentPage*showNumber">
         <a @click.prevent="routerPush(`/customerBase/customerProduct/${item.id}`)">
-          {{item.content}} 瀏覽次數: {{item.unit}}
+          {{item.content}}
           <p class="title text-primary">{{item.title}}</p>
           <div class="boxone bgCover "
               :style="{backgroundImage :`url(${item.imageUrl})`,}"></div>

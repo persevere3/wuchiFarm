@@ -202,7 +202,6 @@ export default {
     updatePopularProducts() {
       const vm = this;
       const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/admin/product/${vm.product.id}`;
-      console.log(vm.product.content, vm.product.unit);
       vm.product.unit = (+vm.product.unit) + 1;
       this.$http.put(api, { data: vm.product }).then(() => {
         vm.$bus.$emit('getPopularProducts');
