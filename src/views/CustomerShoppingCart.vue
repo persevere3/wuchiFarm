@@ -1,8 +1,7 @@
 <template>
 <div>
 
-  <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
-  <div class="container" v-if="cartLength">
+  <div class="container" v-if="getCartsLength">
 
     <ShoppingCartStep :stepActive="stepActive" ></ShoppingCartStep>
 
@@ -28,7 +27,7 @@
                :style="{backgroundImage :`url(${item.product.imageUrl})`,}">
               <div class="name bgCover p-2"
                 @click.prevent="routerPush(`/customerBase/customerProduct/${item.product.id}`)">
-                {{item.product.title}}
+                {{item.product.content}}{{item.product.title}}
               </div>
               <div class="text-danger p-1"  v-if="item.coupon">已套用優惠券</div>
             </td>
@@ -37,9 +36,9 @@
             <td class="price align-middle text-right">{{item.product.price | currency}}</td>
             <td class="align-middle text-center">
               <button type="button" class="btn btn-outline-danger btn-sm"
-                @click="removeCartItem(item.id)"
-                :disabled="item.id === status.loadingItem">
-                <i class="fas fa-spinner fa-spin" v-if="item.id === status.loadingItem"></i>
+                @click="removeCartItem(item)"
+                :disabled="item.id === getLoadingItem">
+                <i class="fas fa-spinner fa-spin" v-if="item.id === getLoadingItem"></i>
                 <i class="far fa-trash-alt" v-else></i>
               </button>
             </td>
@@ -81,14 +80,12 @@
 </template>
 
 <script>
-import BaseLogoLoading from '../components/BaseLogoLoading.vue';
 import ShoppingCartStep from '../components/ShoppingCartStep.vue';
 import ProductlistHistory from '../components/ProductlistHistory.vue';
 import ProductlistPopular from '../components/ProductlistPopular.vue';
 
 export default {
   components: {
-    BaseLogoLoading,
     ShoppingCartStep,
     ProductlistHistory,
     ProductlistPopular,
@@ -96,53 +93,44 @@ export default {
   data() {
     return {
       stepActive: 'cart',
-
-      carts: [],
-      cartLength: 0,
       coupon_code: '',
-
-      isLoading: false,
-      status: {
-        loadingItem: '',
-      },
     };
+  },
+  computed: {
+    isLoading() {
+      return this.$store.state.isLoading;
+    },
+    carts() {
+      return this.$store.state.carts;
+    },
+    getCartsLength() {
+      return this.$store.state.cartsLength;
+    },
+    getLoadingItem() {
+      return this.$store.state.loadingItem;
+    },
   },
   methods: {
     getCart() {
-      const vm = this;
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      vm.isLoading = true;
-      this.$http.get(api).then((response) => {
-        vm.carts = response.data.data;
-        vm.cartLength = vm.carts.carts.length;
-        vm.isLoading = false;
-      });
+      this.$store.dispatch('getCart');
     },
-    removeCartItem(id) {
-      const vm = this;
-      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
-      vm.status.loadingItem = id;
-      this.$http.delete(url).then(() => {
-        vm.getCart();
-        vm.$bus.$emit('getCartEmit');
-        vm.$bus.$emit('messagePush', '已從購物車移除');
-        vm.status.loadingItem = '';
-      });
+    removeCartItem(item) {
+      this.$store.dispatch('removeCartItem', item);
+      this.$store.dispatch('updateMessage', { message: '從購物車刪除', item });
     },
     addCouponCode() {
       const vm = this;
       const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/coupon`;
       const coupon = { code: vm.coupon_code };
-      vm.isLoading = true;
+      vm.$store.dispatch('updateLoading', true);
       this.$http.post(url, { data: coupon }).then((response) => {
         if (response.data.success) {
           vm.getCart();
-          vm.$bus.$emit('getCartEmit');
-          vm.$bus.$emit('messagePush', '已套用優惠券');
+          vm.$store.dispatch('updateMessage', { message: '已套用優惠券' });
         } else {
-          vm.$bus.$emit('messagePush', response.data.message);
+          vm.$store.dispatch('updateMessage', { message: response.data.message });
         }
-        vm.isLoading = false;
+        vm.$store.dispatch('updateLoading', false);
       });
     },
     routerPush(page) {
@@ -152,9 +140,6 @@ export default {
   created() {
     this.getCart();
     this.$bus.$emit('pageActivePush', this.$route.path);
-    this.$bus.$on('getShoppingCart', () => {
-      this.getCart();
-    });
   },
 };
 </script>

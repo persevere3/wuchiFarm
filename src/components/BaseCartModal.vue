@@ -6,7 +6,7 @@
       <i class="fas fa-shopping-cart fa-2x">
       </i>
       <div class="cartLength d-flex justify-content-center align-items-center">
-        {{cartLength}}
+        {{getCartsLength}}
       </div>
     </a>
   </div>
@@ -14,7 +14,7 @@
   <div class="modal fade modalExpand" id="CartModal">
     <div class="modal-dialog modal-dialogExpand">
       <div class="modal-content">
-        <div class="container" v-if="cartLength">
+        <div class="container" v-if="getCartsLength">
           <div class="p-2"><h5>已加入購物車 :</h5></div>
           <div class="modalTableWrap d-flex">
             <div class="boxone"></div>
@@ -27,15 +27,15 @@
                     <div class="name p-1"
                       @click.prevent=
                       "routerPush(`/customerBase/customerProduct/${item.product.id}`)">
-                      {{item.product.title}}
+                      {{item.product.content}}{{item.product.title}}
                     </div>
                   </td>
                   <td class="align-middle text-center" width="30">{{item.qty}}</td>
                   <td class="align-middle text-center" width="30">
                     <button type="button" class="btn btn-outline-danger btn-sm"
-                      @click="removeCartItem(item.id)"
-                      :disabled="item.id === status.loadingItem">
-                      <i class="fas fa-spinner fa-spin" v-if="item.id === status.loadingItem"></i>
+                      @click="removeCartItem(item)"
+                      :disabled="item.id === getLoadingItem">
+                      <i class="fas fa-spinner fa-spin" v-if="item.id === getLoadingItem"></i>
                       <i class="far fa-trash-alt" v-else></i>
                     </button>
                   </td>
@@ -76,36 +76,27 @@
 import $ from 'jquery';
 
 export default {
-  data() {
-    return {
-      carts: {},
-      cartLength: 0,
-      isLoading: false,
-      status: {
-        loadingItem: '',
-      },
-    };
+  computed: {
+    carts() {
+      return this.$store.state.carts;
+    },
+    getCartsLength() {
+      return this.$store.state.cartsLength;
+    },
+    getLoadingItem() {
+      return this.$store.state.loadingItem;
+    },
   },
   methods: {
     getCart() {
-      const vm = this;
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      this.$http.get(api).then((response) => {
-        vm.carts = response.data.data;
-        vm.cartLength = response.data.data.carts.length;
-      });
+      this.$store.dispatch('getCart');
+    },
+    removeCartItem(item) {
+      this.$store.dispatch('removeCartItem', item);
+      this.$store.dispatch('updateMessage', { message: '從購物車刪除', item });
     },
     showCartModal() {
       $('#CartModal').modal('show');
-    },
-    removeCartItem(id) {
-      const vm = this;
-      vm.status.loadingItem = id;
-      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
-      this.$http.delete(url).then(() => {
-        vm.getCart();
-        vm.status.loadingItem = '';
-      });
     },
     routerPush(page) {
       $('#CartModal').modal('hide');
@@ -116,9 +107,6 @@ export default {
   },
   created() {
     this.getCart();
-    this.$bus.$on('getCartEmit', () => {
-      this.getCart();
-    });
   },
 };
 </script>
@@ -162,7 +150,7 @@ export default {
 
 
 .modal-dialogExpand{
-  width:300px;
+  width:310px;
   position:absolute;
   right:3px;
   bottom:80px;

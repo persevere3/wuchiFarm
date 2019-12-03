@@ -97,25 +97,30 @@ export default {
       stepActive: 'pay',
     };
   },
+  computed: {
+    isLoading() {
+      return this.$store.state.isLoading;
+    },
+  },
   methods: {
     getOrder() {
       const vm = this;
       const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/order/${vm.orderId}`;
-      vm.isLoading = true;
+      vm.$store.dispatch('updateLoading', true);
       this.$http.get(url).then((response) => {
         vm.order = response.data.order;
-        vm.isLoading = false;
+        vm.$store.dispatch('updateLoading', false);
       });
     },
     payOrder() {
       const vm = this;
       const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/pay/${vm.orderId}`;
-      vm.isLoading = true;
+      vm.$store.dispatch('updateLoading', true);
       this.$http.post(url).then((response) => {
         if (response.data.success) {
           vm.getOrder();
         }
-        vm.isLoading = false;
+        vm.$store.dispatch('updateLoading', false);
       });
     },
   },

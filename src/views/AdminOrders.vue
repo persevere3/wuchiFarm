@@ -33,12 +33,12 @@
       </tbody>
     </table>
 
-    <Pagination :pages="pagination" @emitPages="getOrders"></Pagination>
+    <AdminPagination :pages="pagination" @emitPages="getOrders"></AdminPagination>
   </div>
 </template>
 
 <script>
-import Pagination from '../components/Pagination.vue';
+import AdminPagination from '../components/AdminPagination.vue';
 
 export default {
   data() {
@@ -50,7 +50,7 @@ export default {
     };
   },
   components: {
-    Pagination,
+    AdminPagination,
   },
   methods: {
     getOrders(currentPage = 1) {

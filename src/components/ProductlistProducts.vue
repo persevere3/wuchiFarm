@@ -1,8 +1,6 @@
 <template>
 <div>
 
-  <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
-
   <div class="container-fluid mt-5">
     <ul class="category d-flex justify-content-center">
       <li style="border-left:2px dotted var(--secondarycolor);">
@@ -80,16 +78,16 @@
             </div>
             <div class="button d-flex justify-content-end align-items-center">
               <i class="fas fa-heart fa-2x like mr-2 mt-2" aria-hidden="true"
-                :class="{'likeActive':isLike[`${key}`]}"
-                @click.stop="updateLikeProducts(key)">
+                :class="{'likeActive':getIsLike[`${key}`]}"
+                @click.stop="updateLikeProducts(item)">
               </i>
               <button class="btn mr-1 mt-2 btn-outline-success">more
               </button>
               <button class="btn btn-success cart mr-2 mt-2"
-                     @click.stop="addtoCart(item.id)"
-                     :disabled="item.id === status.loadingItem">
+                     @click.stop="addToCart(item)"
+                     :disabled="item.id === getLoadingItem">
                 <i class="fas fa-spinner fa-spin"
-                   v-if="item.id === status.loadingItem"></i>
+                   v-if="item.id === getLoadingItem"></i>
                 <i class="fas fa-plus " v-else></i>
                 加入購物車
               </button>
@@ -108,40 +106,55 @@
 </template>
 
 <script>
-import BaseLogoLoading from './BaseLogoLoading.vue';
 import ProductlistPagination from './ProductlistPagination.vue';
 
 export default {
   props: ['showNumber'],
   components: {
-    BaseLogoLoading,
     ProductlistPagination,
   },
   data() {
     return {
       products: [],
       filterProducts: [],
-      likeProducts: [],
-      isLike: [],
       category: '',
       currentPage: 0,
       totalPage: 0,
-      carts: [],
-      isLoading: false,
-      status: {
-        loadingItem: '',
-      },
     };
+  },
+  computed: {
+    getIsLike() {
+      let arr = [];
+      arr = this.$store.state.likeProducts;
+      const isLike = [];
+
+      for (let i = 0; i < this.filterProducts.length; i += 1) {
+        this.$set(isLike, i, false);
+      }
+      if (arr.length !== 0) {
+        for (let i = 0; i < arr.length; i += 1) {
+          for (let j = 0; j < this.filterProducts.length; j += 1) {
+            if (arr[i].id === this.filterProducts[j].id) {
+              this.$set(isLike, j, true);
+            }
+          }
+        }
+      }
+      return isLike;
+    },
+    getLoadingItem() {
+      return this.$store.state.loadingItem;
+    },
   },
   methods: {
     getProducts() {
       const vm = this;
       const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/products/all`;
-      vm.isLoading = true;
+      vm.$store.dispatch('updateLoading', true);
       this.$http.get(api).then((response) => {
         vm.products = response.data.products;
         vm.getFilterProducts('all');
-        vm.isLoading = false;
+        vm.$store.dispatch('updateLoading', false);
       });
     },
     getFilterProducts(category, currentPage = 1) {
@@ -154,77 +167,16 @@ export default {
       this.currentPage = currentPage;
       this.totalPage = Math.ceil(this.filterProducts.length / this.showNumber);
 
-      this.isLike.length = 0;
-      for (let i = 0; i < this.filterProducts.length; i += 1) {
-        this.$set(this.isLike, i, false);
-      }
-      this.likeProducts = JSON.parse(localStorage.getItem('likeProducts')) || [];
-      for (let i = 0; i < this.likeProducts.length; i += 1) {
-        for (let j = 0; j < this.filterProducts.length; j += 1) {
-          if (this.likeProducts[i].id === this.filterProducts[j].id) {
-            this.$set(this.isLike, j, true);
-          }
-        }
-      }
+      this.$store.dispatch('getLikeProducts');
     },
-    updateLikeProducts(key) {
-      this.$set(this.isLike, key, !this.isLike[key]);
-      if (this.isLike[key] === true) {
-        this.likeProducts.push(this.filterProducts[key]);
-      } else {
-        for (let i = 0; i < this.likeProducts.length; i += 1) {
-          if (this.filterProducts[key].id === this.likeProducts[i].id) {
-            this.likeProducts.splice(i, 1);
-          }
-        }
-      }
-      localStorage.setItem('likeProducts', JSON.stringify(this.likeProducts));
-      this.$bus.$emit('getLikeProducts');
-      this.$bus.$emit('getHistoryProducts');
-      this.$bus.$emit('getPopularProducts');
+    updateLikeProducts(item) {
+      this.$store.dispatch('updateLikeProducts', item);
     },
     getCart() {
-      const vm = this;
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      this.$http.get(api).then((response) => {
-        vm.carts = response.data.data;
-      });
+      this.$store.dispatch('getCart');
     },
-    addtoCart(id, qty = 1) {
-      const vm = this;
-
-      let i = 0;
-      let q = 0;
-      let mergeQty = 0;
-      // for出同id取出數量後刪除該筆
-      for (i = 0; i < vm.carts.carts.length; i += 1) {
-        if (id === vm.carts.carts[i].product.id) {
-          q = vm.carts.carts[i].qty;
-          vm.removeCartItem(vm.carts.carts[i].id);
-        }
-      }
-      mergeQty = qty + q;
-      // 合併後新增至購物車
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      vm.status.loadingItem = id;
-      const cart = {
-        product_id: id,
-        qty: mergeQty,
-      };
-      this.$http.post(api, { data: cart }).then(() => {
-        vm.$bus.$emit('getCartEmit');
-        vm.status.loadingItem = '';
-        vm.$bus.$emit('messagePush', '已加入購物車');
-        vm.getCart();
-      });
-    },
-    removeCartItem(id) {
-      const vm = this;
-      vm.status.loadingItem = id;
-      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
-      this.$http.delete(url).then(() => {
-        vm.status.loadingItem = '';
-      });
+    addToCart(item, qty = 1) {
+      this.$store.dispatch('addToCart', { item, qty });
     },
     routerPush(page) {
       this.$router.push(page);

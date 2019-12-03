@@ -1,6 +1,5 @@
 <template>
 <div>
-  <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
   <div class="container">
     <div class="product d-md-flex flex-md-wrap align-items-md-end">
       <div class="picture">
@@ -37,12 +36,12 @@
       </div>
       <div class="d-flex">
         <i class="fas fa-heart fa-2x like mr-1 py-3" aria-hidden="true"
-                  :class="{'likeActive':isLike}"
-                  @click.stop="updateLikeProducts()">
+                  :class="{'likeActive':getIsLike}"
+                  @click.stop="updateLikeProducts(product)">
         </i>
-        <button class="cart btn btn-success my-2 mx-1" @click.prevent="addtoCart(product.id,buyNum)"
-            :disabled="product.id === status.loadingItem">
-          <i class="fas fa-spinner fa-spin mr-1" v-if="product.id === status.loadingItem"></i>
+        <button class="cart btn btn-success my-2 mx-1" @click.prevent="addToCart(product,buyNum)"
+            :disabled="product.id === getLoadingItem">
+          <i class="fas fa-spinner fa-spin mr-1" v-if="product.id === getLoadingItem"></i>
           <i class="fas fa-plus mr-1" v-else></i>加入購物車
         </button>
       </div>
@@ -60,14 +59,12 @@
 </template>
 
 <script>
-import BaseLogoLoading from '../components/BaseLogoLoading.vue';
 import ProductlistHistory from '../components/ProductlistHistory.vue';
 import ProductlistPopular from '../components/ProductlistPopular.vue';
 
 
 export default {
   components: {
-    BaseLogoLoading,
     ProductlistHistory,
     ProductlistPopular,
   },
@@ -78,16 +75,31 @@ export default {
       carts: [],
       buyNum: 1,
       historyProducts: [],
-      likeProducts: [],
-      isLike: false,
-      isLoading: false,
-      status: {
-        loadingItem: '',
-      },
     };
   },
   watch: {
     $route: ['getProduct'],
+  },
+  computed: {
+    isLoading() {
+      return this.$store.state.isLoading;
+    },
+    getIsLike() {
+      let arr = [];
+      arr = this.$store.state.likeProducts;
+      let isLike = false;
+      if (arr.length !== 0) {
+        for (let i = 0; i < arr.length; i += 1) {
+          if (arr[i].id === this.product.id) {
+            isLike = true;
+          }
+        }
+      }
+      return isLike;
+    },
+    getLoadingItem() {
+      return this.$store.state.loadingItem;
+    },
   },
   methods: {
     getProduct() {
@@ -95,85 +107,28 @@ export default {
       vm.id = vm.$route.params.id;
       vm.buyNum = 1;
       const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/product/${vm.id}`;
-      vm.isLoading = true;
+      vm.$store.dispatch('updateLoading', true);
       this.$http.get(api).then((response) => {
         vm.product = response.data.product;
         vm.updateHistoryProducts();
         vm.updatePopularProducts();
-        vm.updateIsLike();
-        vm.isLoading = false;
         vm.$bus.$emit('getHistoryProducts');
+        vm.$bus.$emit('getPopularProducts');
+        vm.$store.dispatch('getLikeProducts');
+        vm.$store.dispatch('updateLoading', false);
       });
     },
-    updateIsLike() {
-      this.isLike = false;
-      this.likeProducts = JSON.parse(localStorage.getItem('likeProducts')) || [];
-      for (let i = 0; i < this.likeProducts.length; i += 1) {
-        if (this.likeProducts[i].id === this.product.id) {
-          this.isLike = true;
-        }
-      }
-    },
-    updateLikeProducts() {
-      this.isLike = !this.isLike;
-      if (this.isLike === true) {
-        this.likeProducts.push(this.product);
-      } else {
-        for (let i = 0; i < this.likeProducts.length; i += 1) {
-          if (this.product.id === this.likeProducts[i].id) {
-            this.likeProducts.splice(i, 1);
-          }
-        }
-      }
-      localStorage.setItem('likeProducts', JSON.stringify(this.likeProducts));
-      this.$bus.$emit('getLikeProducts');
-      this.$bus.$emit('getHistoryProducts');
-      this.$bus.$emit('getPopularProducts');
-    },
-    getCart() {
-      const vm = this;
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      this.$http.get(api).then((response) => {
-        vm.carts = response.data.data;
-      });
+    updateLikeProducts(item) {
+      this.$store.dispatch('updateLikeProducts', item);
     },
     changeNum(i) {
       if ((this.buyNum + i) > 0 && (this.buyNum + i) < 11) this.buyNum = this.buyNum + i;
     },
-    addtoCart(id, qty = 1) {
-      const vm = this;
-      let i = 0;
-      let q = 0;
-      let mergeQty = 0;
-      // for出同id取出數量後刪除該筆
-      for (i = 0; i < vm.carts.carts.length; i += 1) {
-        if (id === vm.carts.carts[i].product.id) {
-          q = vm.carts.carts[i].qty;
-          vm.removeCartItem(vm.carts.carts[i].id);
-        }
-      }
-      mergeQty = qty + q;
-      // 合併後新增至購物車
-      const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart`;
-      vm.status.loadingItem = id;
-      const cart = {
-        product_id: id,
-        qty: mergeQty,
-      };
-      this.$http.post(api, { data: cart }).then(() => {
-        vm.$bus.$emit('getCartEmit');
-        vm.status.loadingItem = '';
-        vm.$bus.$emit('messagePush', '已加入購物車');
-        vm.getCart();
-      });
+    getCart() {
+      this.$store.dispatch('getCart');
     },
-    removeCartItem(id) {
-      const vm = this;
-      vm.status.loadingItem = id;
-      const url = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/cart/${id}`;
-      this.$http.delete(url).then(() => {
-        vm.status.loadingItem = '';
-      });
+    addToCart(item, qty = 1) {
+      this.$store.dispatch('addToCart', { item, qty });
     },
     updateHistoryProducts() {
       this.historyProducts = JSON.parse(localStorage.getItem('historyProducts')) || [];
@@ -189,10 +144,7 @@ export default {
         }
       }
       if (this.historyProducts.length === 4) {
-        for (let i = 1; i < this.historyProducts.length; i += 1) {
-          this.historyProducts[i - 1] = this.historyProducts[i];
-        }
-        this.historyProducts.pop();
+        this.historyProducts.splice(0, 1);
         this.historyProducts.push(this.product);
       } else {
         this.historyProducts.push(this.product);
@@ -209,12 +161,9 @@ export default {
     },
   },
   created() {
-    this.$bus.$emit('pageActivePush', this.$route.path);
     this.getProduct();
     this.getCart();
-    this.$bus.$on('getProduct', () => {
-      this.updateIsLike();
-    });
+    this.$bus.$emit('pageActivePush', this.$route.path);
   },
 };
 </script>

@@ -6,7 +6,7 @@
       <i class="fas fa-heart fa-2x">
       </i>
       <div class="cartLength d-flex justify-content-center align-items-center">
-        {{likeProductsLength}}
+        {{getLikeProducts.length}}
       </div>
     </a>
   </div>
@@ -14,26 +14,26 @@
   <div class="modal fade modalExpand" id="likeModal">
     <div class="modal-dialog modal-dialogExpand">
       <div class="modal-content ">
-        <div class="container mb-3" v-if="likeProductsLength">
+        <div class="container mb-3" v-if="getLikeProducts.length">
           <div class="p-2"><h5>已加入最愛 :</h5></div>
           <div class="modalTableWrap d-flex">
             <div class="boxone"></div>
             <div class="boxtwo"></div>
             <table >
               <tbody>
-                <tr class="p-1" v-for=" (item, key) in likeProducts " :key="key" >
+                <tr class="p-1" v-for=" (item, key) in getLikeProducts" :key="key" >
                   <td width="200" class="align-middle text-left bgCover p-1"
                      :style="{backgroundImage :`url(${item.imageUrl})`,}">
                     <div class="name p-1"
                       @click.prevent=
                       "routerPush(`/customerBase/customerProduct/${item.id}`)">
-                      {{item.title}}
+                      {{item.content}}{{item.title}}
                     </div>
                   </td>
                   <td class="align-middle text-center">
                     <i class="fas fa-heart fa-2x like p-1" aria-hidden="true"
                       :class="{'likeActive':true}"
-                      @click.stop="removelikeItem(key)">
+                      @click.stop="updateLikeProducts(item)">
                     </i>
                   </td>
                 </tr>
@@ -55,27 +55,15 @@
 import $ from 'jquery';
 
 export default {
-  data() {
-    return {
-      likeProducts: [],
-      likeProductsLength: 0,
-    };
+  computed: {
+    getLikeProducts() {
+      return this.$store.state.likeProducts;
+    },
   },
   methods: {
-    getLikeProducts() {
-      this.likeProducts = JSON.parse(localStorage.getItem('likeProducts')) || [];
-      this.likeProductsLength = this.likeProducts.length;
+    updateLikeProducts(item) {
+      this.$store.dispatch('updateLikeProducts', item);
     },
-    removelikeItem(key) {
-      this.likeProducts.splice(key, 1);
-      localStorage.setItem('likeProducts', JSON.stringify(this.likeProducts));
-      this.getLikeProducts();
-      this.$bus.$emit('getFilterProducts');
-      this.$bus.$emit('getHistoryProducts');
-      this.$bus.$emit('getPopularProducts');
-      this.$bus.$emit('getProduct');
-    },
-
     showLikeModal() {
       $('#likeModal').modal('show');
     },
@@ -85,12 +73,6 @@ export default {
         this.$router.push(page);
       }
     },
-  },
-  created() {
-    this.getLikeProducts();
-    this.$bus.$on('getLikeProducts', () => {
-      this.getLikeProducts();
-    });
   },
 };
 </script>
@@ -134,7 +116,7 @@ export default {
 
 
 .modal-dialogExpand{
-  width:300px;
+  width:310px;
   position:absolute;
   right:3px;
   bottom:80px;

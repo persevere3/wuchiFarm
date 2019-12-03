@@ -101,7 +101,7 @@ export default {
           this.$http.post(url, { data: order }).then((response) => {
             if (response.data.success) {
               vm.$router.push(`customerPay/${response.data.orderId}`);
-              vm.$bus.$emit('getCartEmit');
+              vm.$store.dispatch('getCart');
             }
           });
         }

@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import Vuex from 'vuex';
 import axios from 'axios';
 import VueAxios from 'vue-axios';
 import Loading from 'vue-loading-overlay';
@@ -11,6 +12,7 @@ import VueI18n from 'vue-i18n';
 
 import App from './App.vue';
 import router from './router';
+import store from './store';
 import './bus';
 import currency from './filters/currency';
 import dateFilter from './filters/date';
@@ -19,6 +21,7 @@ Vue.config.productionTip = false;
 axios.defaults.withCredentials = true;
 
 Vue.use(VueAxios, axios);
+Vue.use(Vuex);
 Vue.component('Loading', Loading);
 Vue.filter('currency', currency);
 Vue.filter('date', dateFilter);
@@ -38,6 +41,7 @@ Vue.use(VeeValidate, {
 
 new Vue({
   router,
+  store,
   render: h => h(App),
 }).$mount('#app');
 

@@ -7,6 +7,7 @@
 
   <router-view></router-view>
 
+  <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
   <BaseLikeModal
     v-if="pageActive!=='/customerBase/customerShoppingCart'&&
           pageActive!=='/customerBase/customerData'">
@@ -24,6 +25,7 @@
 import BaseNavbar from '../components/BaseNavbar.vue';
 import BaseAlert from '../components/BaseAlert.vue';
 import BaseBanner from '../components/BaseBanner.vue';
+import BaseLogoLoading from '../components/BaseLogoLoading.vue';
 import BaseLikeModal from '../components/BaseLikeModal.vue';
 import BaseCartModal from '../components/BaseCartModal.vue';
 import BaseFooter from '../components/BaseFooter.vue';
@@ -33,6 +35,7 @@ export default {
     BaseNavbar,
     BaseAlert,
     BaseBanner,
+    BaseLogoLoading,
     BaseLikeModal,
     BaseCartModal,
     BaseFooter,
@@ -41,6 +44,11 @@ export default {
     return {
       pageActive: '',
     };
+  },
+  computed: {
+    isLoading() {
+      return this.$store.state.isLoading;
+    },
   },
   created() {
     this.$bus.$on('pageActivePush', (pageActive) => {
