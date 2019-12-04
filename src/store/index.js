@@ -111,22 +111,26 @@ export default new Vuex.Store({
   },
   // 同步
   mutations: {
+    // loading ------------------------------------------------------------
     LOADING(state, payload) {
       state.isLoading = payload;
     },
     LOADINGITEM(state, payload) {
       state.loadingItem = payload;
     },
+    // like ------------------------------------------------------------
     LIKEPRODUCTS(state, payload) {
       state.likeProducts = [];
       state.likeProducts = payload;
     },
+    // carts ------------------------------------------------------------
     CARTS(state, payload) {
       state.carts = payload;
     },
     CARTSLENGTH(state, payload) {
       state.cartsLength = payload;
     },
+    // messages ------------------------------------------------------------
     PUSHMESSAGE(state, payload) {
       state.messages.push(payload);
     },

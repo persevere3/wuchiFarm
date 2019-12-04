@@ -18,7 +18,11 @@
 
 <script>
 export default {
-  props: ['isLoading'],
+  computed: {
+    isLoading() {
+      return this.$store.state.isLoading;
+    },
+  },
 };
 </script>
 

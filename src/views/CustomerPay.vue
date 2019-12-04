@@ -1,8 +1,6 @@
 <template>
 <div>
 
-  <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
-
   <div class="container">
 
     <ShoppingCartStep :stepActive="stepActive" ></ShoppingCartStep>
@@ -80,12 +78,10 @@
 </template>
 
 <script>
-import BaseLogoLoading from '../components/BaseLogoLoading.vue';
 import ShoppingCartStep from '../components/ShoppingCartStep.vue';
 
 export default {
   components: {
-    BaseLogoLoading,
     ShoppingCartStep,
   },
   data() {

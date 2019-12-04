@@ -21,7 +21,7 @@
       <div class="product col-md-6 col-lg-4 my-2"
            v-for="(item,key) in products" :key="key">
         <a @click.prevent="routerPush(`/customerBase/customerProduct/${item.id}`)">
-          {{item.content}} 瀏覽次數: {{item.unit}}
+          {{item.content}} <!-- 瀏覽次數: {{item.unit}} -->
           <p class="title text-primary">{{item.title}}</p>
           <div class="boxone bgCover "
               :style="{backgroundImage :`url(${item.imageUrl})`,}"></div>
@@ -45,7 +45,7 @@
                 <i class="fas fa-spinner fa-spin"
                    v-if="item.id === getLoadingItem"></i>
                 <i class="fas fa-plus " v-else></i>
-                加入購物車
+                購物車
               </button>
             </div>
           </div>
@@ -189,14 +189,14 @@ export default {
   left: 5%;
 }
 .product a .boxone{
-  width: 60%;
+  width: 65%;
   height: 25%;
   position:absolute;
   top: 0%;
   right: 5%;
 }
 .product a .boxtwo{
-  width: 60%;
+  width: 65%;
   height: 70%;
   position:absolute;
   bottom:0%;
@@ -204,7 +204,7 @@ export default {
   border-radius:5% 0% 0% 0%;
 }
 .product a .info{
-  width:72%;
+  width:82%;
   height:100%;
   position:absolute;
   top:0%;

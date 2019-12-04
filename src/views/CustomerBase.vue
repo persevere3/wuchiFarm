@@ -7,7 +7,7 @@
 
   <router-view></router-view>
 
-  <BaseLogoLoading :isLoading="isLoading" :key="isLoading"></BaseLogoLoading>
+  <BaseLogoLoading></BaseLogoLoading>
   <BaseLikeModal
     v-if="pageActive!=='/customerBase/customerShoppingCart'&&
           pageActive!=='/customerBase/customerData'">
@@ -45,17 +45,68 @@ export default {
       pageActive: '',
     };
   },
-  computed: {
-    isLoading() {
-      return this.$store.state.isLoading;
-    },
-  },
   created() {
     this.$bus.$on('pageActivePush', (pageActive) => {
       this.pageActive = pageActive;
     });
   },
 };
+/*
+// pageActivePush ------------------------------------------------------------
+CustomerBase :
+this.$bus.$on('pageActivePush', (pageActive) => {
+  this.pageActive = pageActive;
+});
+ProductlistProducts :
+this.$bus.$emit('pageActivePush', this.$route.path);
+CustomerData :
+this.$bus.$emit('pageActivePush', this.$route.path);
+CustomerPay :
+this.$bus.$emit('pageActivePush', this.$route.path);
+CustomerProduct :
+this.$bus.$emit('pageActivePush', this.$route.path);
+CustomerShoppingCart :
+this.$bus.$emit('pageActivePush', this.$route.path);
+
+// getHistoryProducts ------------------------------------------------------------
+ProductlistHistory :
+this.$bus.$on('getHistoryProducts', () => {
+  this.getHistoryProducts();
+});
+CustomerProduct :
+vm.$bus.$emit('getHistoryProducts');
+
+// getPopularProducts ------------------------------------------------------------
+ProductlistPopular :
+this.$bus.$on('getPopularProducts', () => {
+  this.getPopularProducts();
+});
+CustomerProduct :
+vm.$bus.$emit('ProductlistPopular');
+
+// currentPagePush ------------------------------------------------------------
+ProductlistProducts :
+this.$bus.$on('currentPagePush', (currentPage) => {
+  this.currentPage = currentPage;
+});
+ProductlistPagination :
+this.$bus.$emit('currentPagePush', currentPage);
+
+// props ------------------------------------------------------------
+BaseNavbar :
+props: ['pageActive'],
+
+AdminPagination :
+props: ['pages'],
+
+ProductlistProducts :
+props: ['showNumber'],
+ProductlistPagination :
+props: ['currentPage', 'totalPage'],
+
+ShoppingCartStep :
+props: ['stepActive'],
+*/
 </script>
 
 <style>

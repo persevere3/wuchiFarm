@@ -15,7 +15,7 @@
     <div class="modal-dialog modal-dialogExpand">
       <div class="modal-content ">
         <div class="container mb-3" v-if="getLikeProducts.length">
-          <div class="p-2"><h5>已加入最愛 :</h5></div>
+          <div class="p-2"><h5>已加入追蹤 :</h5></div>
           <div class="modalTableWrap d-flex">
             <div class="boxone"></div>
             <div class="boxtwo"></div>
@@ -42,7 +42,7 @@
           </div>
         </div>
         <div class="cartLength0  d-flex justify-content-center" v-else>
-          <h5 class="py-2 px-3 ">最愛目前沒有商品喔!</h5>
+          <h5 class="py-2 px-3 ">目前沒有追蹤商品喔!</h5>
         </div>
       </div>
     </div>

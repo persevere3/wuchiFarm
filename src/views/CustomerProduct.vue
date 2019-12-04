@@ -72,7 +72,6 @@ export default {
     return {
       id: '',
       product: {},
-      carts: [],
       buyNum: 1,
       historyProducts: [],
     };
@@ -156,7 +155,6 @@ export default {
       const api = `${process.env.VUE_APP_APIPATH}/api/${process.env.VUE_APP_CUSTOMPATH}/admin/product/${vm.product.id}`;
       vm.product.unit = (+vm.product.unit) + 1;
       this.$http.put(api, { data: vm.product }).then(() => {
-        vm.$bus.$emit('getPopularProducts');
       });
     },
   },
